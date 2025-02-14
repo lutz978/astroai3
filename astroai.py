@@ -67,25 +67,6 @@ def ObterVideosPopulares(country_name, niche):
 
     video_ids = [item["id"]["videoId"] for item in search_response.get("items", [])]
 
-    # Buscar vídeos em alta no país
-    trending_response = youtube.videos().list(
-        part="snippet,statistics",
-        chart="mostPopular",
-        regionCode=country_code,
-        maxResults=10  # Ajuste conforme necessário
-    ).execute()
-
-    trending_videos = []
-    for item in trending_response.get("items", []):
-        trending_videos.append({
-            "id": item["id"],
-            "title": item["snippet"]["title"],
-            "views": int(item["statistics"].get("viewCount", 0)),
-            "likes": int(item["statistics"].get("likeCount", 0)),
-            "comments": int(item["statistics"].get("commentCount", 0))
-        })
-
-    # Obter estatísticas e informações dos vídeos filtrados pelo nicho
     videos_response = youtube.videos().list(
         part="snippet,statistics",
         id=",".join(video_ids)
@@ -113,7 +94,6 @@ def ObterVideosPopulares(country_name, niche):
             "comments": int(statistics.get("commentCount", 0))
         })
 
-    
     return niche_videos
 
 #Função que gera as sugestões de conteúdo
@@ -133,8 +113,9 @@ def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
         )
 
     prompt += (
-    "\nCom base nesses vídeos e no perfil do criador, sugira 10 ideias criativas de vídeos que sejam relevantes para o público do criador. "
-    "Cada sugestão deve estar diretamente relacionada a um ou mais dos vídeos listados acima, explicando como essa inspiração foi derivada."
+    "\nPara cada uma das 10 ideias sugeridas, identifique quais vídeos da lista acima serviram de inspiração e explique "
+    "claramente como a ideia se conecta com o conteúdo já popular. Certifique-se de que cada sugestão é baseada diretamente "
+    "nos temas e tendências identificados nos vídeos listados."
     )
     
     prompt += (
@@ -142,10 +123,21 @@ def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
         f"{country_name}) essa ideia desperta a curiosidade devido aos vídeos populares que analisamos'."
     )
 
+    video_list_str = "\n".join(
+    f"- {video['title']} ({video['views']} visualizações, {video['likes']} likes, {video['comments']} comentários)"
+    for video in youtube_data
+    )
+
     prompt += (
-    "\nEm seguida, escolha 3 dessas 10 ideias que você considera as melhores, justifique sua escolha e forneça detalhes sobre "
-    f"estatísticas dos vídeos ({youtube_data}) e títulos disponíveis ({', '.join(video['title'] for video in youtube_data)}) "
-    f"no idioma original do país {country_name} para apoiar a sugestão.")
+    "\nAqui estão os vídeos analisados:\n"
+    f"{video_list_str}\n"
+    "Com base nessas informações, forneça sugestões de conteúdo diretamente relacionadas aos temas e tendências dos vídeos listados."
+    )
+
+    prompt += (
+    "\nPara as 3 melhores ideias, identifique o vídeo específico de referência e explique por que ele serviu de inspiração, "
+    "mencionando estatísticas relevantes como número de visualizações e engajamento."
+    )
 
     response = APIdaOpenAI(prompt)
     return response
