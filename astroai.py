@@ -6,7 +6,10 @@ import re
 import streamlit as st
 import time
 
-client = OpenAI(API_KEY)
+API_KEY = st.secrets["API_KEY"]
+YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
+
+client = OpenAI(api_key=API_KEY)
 def APIdaOpenAI(prompt):
     completion = client.chat.completions.create(
       model="gpt-4o-mini",
