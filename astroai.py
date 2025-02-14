@@ -27,8 +27,7 @@ def ObterVideosPopulares(country_name, niche):
     country_code = ObterCountryCode(country_name)
     if not country_code:
         return []
-    
-    target_language = ObterIdiomaDoPais(country_name)
+
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
     data_limite = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat(timespec="seconds").replace("+00:00", "Z")
     
