@@ -132,21 +132,21 @@ def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
             f"Likes: {video['likes']}, Comentários: {video['comments']}\n"
         )
 
-    prompt += "\nCom base nesses vídeos e no perfil do criador, sugira 10 ideias criativas de vídeos que sejam relevantes para o público do criador."
-
-    # Solicitar que a IA justifique com base nesses vídeos filtrados
+    prompt += (
+    "\nCom base nesses vídeos e no perfil do criador, sugira 10 ideias criativas de vídeos que sejam relevantes para o público do criador. "
+    "Cada sugestão deve estar diretamente relacionada a um ou mais dos vídeos listados acima, explicando como essa inspiração foi derivada."
+    )
+    
     prompt += (
         "\nExplique o motivo das ideias sugeridas, por exemplo: 'Esta ideia pode ser engajante porque no país escolhido ("
         f"{country_name}) essa ideia desperta a curiosidade devido aos vídeos populares que analisamos'."
     )
 
-    # Solicitar os top 3 vídeos e suas justificativas
     prompt += (
-        "\nEm seguida, escolha 3 dessas 10 ideias que você considera as melhores, justifique sua escolha e forneça detalhes sobre "
-        "estatísticas dos vídeos em ("f"{youtube_data}) e títulos (disponiveis em "f"{video['title']}) no idioma original do país "f"{country_name}) para apoiar a sugestão."
-    )
+    "\nEm seguida, escolha 3 dessas 10 ideias que você considera as melhores, justifique sua escolha e forneça detalhes sobre "
+    f"estatísticas dos vídeos ({youtube_data}) e títulos disponíveis ({', '.join(video['title'] for video in youtube_data)}) "
+    f"no idioma original do país {country_name} para apoiar a sugestão.")
 
-    # Executar o comando com o prompt ajustado
     response = APIdaOpenAI(prompt)
     return response
 
