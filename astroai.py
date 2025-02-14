@@ -68,16 +68,16 @@ def ObterVideosPopulares(country_name, niche):
 
 def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
     referencias = "\n".join([f"{v['titulo']} ({v['link']})" for v in videos])
-        prompt = (
-        f"Perfil do criador: {profile_info}\n\n"
-    )
-
     prompt = f"""
     Baseando-se nos seguintes vídeos populares do YouTube:
     {referencias}
-    Gere 10 sugestões detalhadas de conteúdo para um criador de conteúdo, com o perfil acima.
+    Gere 10 sugestões detalhadas de conteúdo para um criador de conteúdo, com o perfil abaixo.
     Para cada sugestão, inclua o título do vídeo de referência e o link.
     """
+    
+    prompt = (
+        f"Perfil do criador: {profile_info}\n\n"
+    )
 
     response = APIdaOpenAI(prompt)
     return response
