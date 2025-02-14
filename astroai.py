@@ -43,19 +43,18 @@ def ObterVideosPopulares(country_name, niche):
     
     video_ids = [item["id"]["videoId"] for item in resultado["items"]]
     
-    # Agora obtemos as visualizações de cada vídeo
     detalhes_videos = youtube.videos().list(
         part="statistics",
         id=','.join(video_ids)
     ).execute()
 
     videos = []
-    for item in detalhes_videos["items"]:
-        video_id = item["id"]
+    for item in resultado["items"]:
+        video_id = item["id"]["videoId"]
         titulo = item["snippet"]["title"]
         descricao = item["snippet"]["description"]
-        views = item["statistics"]["viewCount"]
         link = f"https://www.youtube.com/watch?v={video_id}"
+        views = next((v["statistics"]["viewCount"] for v in detalhes_videos["items"] if v["id"] == video_id), 0)
         
         videos.append({
             "titulo": titulo,
