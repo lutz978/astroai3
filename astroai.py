@@ -57,7 +57,7 @@ def ObterVideosPopulares(country_name, niche):
     return videos
 
 def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
-    referencias = "\n".join([f"{v['titulo']} ({v['link']})" for v in videos])
+    referencias = "\n".join([f"{v['titulo']} ({v['link']})" for v in youtube_data])
     prompt = f"""
     Baseando-se nos seguintes vídeos populares do YouTube:
     {referencias}
