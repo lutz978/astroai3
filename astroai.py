@@ -17,9 +17,6 @@ def APIdaOpenAI(prompt):
     return completion.choices[0].message.content
 
 def ObterVideosPopulares(niche):
-    if not country_code:
-        return []
-
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
     data_limite = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat(timespec="seconds").replace("+00:00", "Z")
     
