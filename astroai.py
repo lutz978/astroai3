@@ -23,18 +23,10 @@ def ObterCountryCode(country_name):
     match = re.search(r"\b([A-Z]{2})\b", response.strip())
     return match.group(1) if match else None
 
-def ObterIdiomaDoPais(country_name):
-    prompt = f"Qual é o idioma oficial do país {country_name}?"
-    response = APIdaOpenAI(prompt)
-    match = re.search(r"([A-Za-z]+)", response.strip())
-    return match.group(1).lower() if match else "unknown"
-
 def ObterVideosPopulares(country_name, niche):
     country_code = ObterCountryCode(country_name)
     if not country_code:
         return []
-
-    idioma = ObterIdiomaDoPais(country_name)
     
     target_language = ObterIdiomaDoPais(country_name)
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
@@ -45,7 +37,6 @@ def ObterVideosPopulares(country_name, niche):
         part="snippet",
         type="video",
         regionCode=country_code,
-        relevanceLanguage=idioma,
         maxResults=10,
         order="viewCount"
     )
