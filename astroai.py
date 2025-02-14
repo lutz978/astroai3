@@ -93,7 +93,7 @@ def main():
             profile_info = f"Nicho: {niche}, Público-alvo: {audience}, Formato: {format_preference}, País: {country_name}"
             youtube_data = ObterVideosPopulares(country_name, niche)
             videos_filtrados = [v for v in youtube_data if v['views'] >= min_views] if min_views else youtube_data
-            sugestoes_de_conteudo = GerarSugestaoDeConteudo(perfil_criador, videos_filtrados, country_name)
+            sugestoes_de_conteudo = GerarSugestaoDeConteudo(profile_info, videos_filtrados, country_name)
             st.subheader("Sugestões de conteúdo:")
             escrever_texto_gradualmente(sugestoes_de_conteudo, 0.01)
 
