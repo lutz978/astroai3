@@ -11,6 +11,17 @@ YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
 
 client = OpenAI(api_key=API_KEY)
 
+pais_para_idioma = {
+    "br": "pt",  # Brasil -> Português
+    "us": "en",  # EUA -> Inglês
+    "fr": "fr",  # França -> Francês
+    "es": "es",  # Espanha -> Espanhol
+    "de": "de",  # Alemanha -> Alemão
+    "it": "it",  # Itália -> Italiano
+    "jp": "ja",  # Japão -> Japonês
+    # Adicione mais países e idiomas conforme necessário
+}
+
 def APIdaOpenAI(prompt):
     completion = client.chat.completions.create(
       model="gpt-4o-mini",
@@ -28,6 +39,9 @@ def ObterVideosPopulares(country_name, niche):
     if not country_code:
         return []
 
+    # Determinar o idioma com base no código do país
+    idioma_preferido = pais_para_idioma.get(country_code.lower(), "en")  # Default para inglês se não encontrado
+
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
     data_limite = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat(timespec="seconds").replace("+00:00", "Z")
     
@@ -43,25 +57,36 @@ def ObterVideosPopulares(country_name, niche):
     
     video_ids = [item["id"]["videoId"] for item in resultado["items"]]
     
+    # Agora obtemos as visualizações de cada vídeo
     detalhes_videos = youtube.videos().list(
-        part="statistics",
+        part="statistics,snippet",  # Incluindo 'snippet' para acessar título e descrição
         id=','.join(video_ids)
     ).execute()
 
     videos = []
-    for item in resultado["items"]:
-        video_id = item["id"]["videoId"]
+    for item in detalhes_videos["items"]:
+        video_id = item["id"]
         titulo = item["snippet"]["title"]
         descricao = item["snippet"]["description"]
         link = f"https://www.youtube.com/watch?v={video_id}"
-        views = next((v["statistics"]["viewCount"] for v in detalhes_videos["items"] if v["id"] == video_id), 0)
+        views = item["statistics"]["viewCount"]
         
-        videos.append({
-            "titulo": titulo,
-            "descricao": descricao,
-            "link": link,
-            "views": int(views)
-        })
+        # Detectando o idioma do título e descrição
+        try:
+            idioma_titulo = detect(titulo)
+            idioma_descricao = detect(descricao)
+        except:
+            idioma_titulo = "unknown"
+            idioma_descricao = "unknown"
+        
+        # Verificando se o idioma corresponde ao idioma desejado
+        if idioma_titulo == idioma_preferido or idioma_descricao == idioma_preferido:
+            videos.append({
+                "titulo": titulo,
+                "descricao": descricao,
+                "link": link,
+                "views": int(views)
+            })
     
     return videos
 
