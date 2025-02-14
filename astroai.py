@@ -91,7 +91,7 @@ def ObterVideosPopulares(country_name, niche):
         id=",".join(video_ids)
     ).execute()
 
-    youtube_data = []
+    niche_videos = []
     for item in videos_response.get("items", []):
         title = item["snippet"]["title"]
         description = item["snippet"].get("description", "")
@@ -105,7 +105,7 @@ def ObterVideosPopulares(country_name, niche):
             continue  # Ignora vídeos em idiomas diferentes
 
         statistics = item.get("statistics", {})
-        youtube_data.append({
+        niche_videos.append({
             "id": item["id"],
             "title": title,
             "views": int(statistics.get("viewCount", 0)),
@@ -114,7 +114,7 @@ def ObterVideosPopulares(country_name, niche):
         })
 
     
-    return youTube_data
+    return niche_videos
 
 #Função que gera as sugestões de conteúdo
 def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
