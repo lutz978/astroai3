@@ -60,7 +60,7 @@ def ObterVideosPopulares(country_name, niche):
         q=niche,
         regionCode=country_code,
         type="video",
-        maxResults=40,
+        maxResults=10,
         order="date",
         publishedAfter=data_limite
     ).execute()
@@ -72,7 +72,7 @@ def ObterVideosPopulares(country_name, niche):
         part="snippet,statistics",
         chart="mostPopular",
         regionCode=country_code,
-        maxResults=30  # Ajuste conforme necessário
+        maxResults=10  # Ajuste conforme necessário
     ).execute()
 
     trending_videos = []
@@ -113,7 +113,7 @@ def ObterVideosPopulares(country_name, niche):
             "comments": int(statistics.get("commentCount", 0))
         })
 
-    # Retornar vídeos do nicho + vídeos em alta
+    
     return niche_videos
 
 #Função que filtra os vídeos mais populares com base no número de visualizações pedido
@@ -151,10 +151,8 @@ def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
     # Solicitar os top 3 vídeos e suas justificativas
     prompt += (
         "\nEm seguida, escolha 3 dessas 10 ideias que você considera as melhores, justifique sua escolha e forneça detalhes sobre "
-        "estatísticas dos vídeos (likes, visualizações, comentários) e títulos (no idioma original do país filtrado) para apoiar a sugestão."
+        "estatísticas dos vídeos em ("f"{youtube_data}) e títulos (disponiveis em "f"{video['title']}) no idioma original do país "f"{country_name}) para apoiar a sugestão."
     )
-
-    prompt += "\nApenas considere vídeos lançados nos últimos 3 meses para sugerir ideias de conteúdo. Desconsidere vídeos antigos."
 
     # Executar o comando com o prompt ajustado
     response = APIdaOpenAI(prompt)
