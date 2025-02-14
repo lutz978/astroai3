@@ -10,37 +10,15 @@ API_KEY = st.secrets["API_KEY"]
 YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
 
 client = OpenAI(api_key=API_KEY)
-
-pais_para_idioma = {
-    "br": "pt",  # Brasil -> Português
-    "us": "en",  # EUA -> Inglês
-    "fr": "fr",  # França -> Francês
-    "es": "es",  # Espanha -> Espanhol
-    "de": "de",  # Alemanha -> Alemão
-    "it": "it",  # Itália -> Italiano
-    "jp": "ja",  # Japão -> Japonês
-    # Adicione mais países e idiomas conforme necessário
-}
-
 def APIdaOpenAI(prompt):
     completion = client.chat.completions.create(
       model="gpt-4o-mini",
       messages=[{"role": "user", "content": prompt}])
     return completion.choices[0].message.content
 
-def ObterCountryCode(country_name):
-    prompt = f"Qual é o código ISO 3166-1 alfa-2 para o país {country_name}?"
-    response = APIdaOpenAI(prompt)
-    match = re.search(r"\b([A-Z]{2})\b", response.strip())
-    return match.group(1) if match else None
-
-def ObterVideosPopulares(country_name, niche):
-    country_code = ObterCountryCode(country_name)
+def ObterVideosPopulares(niche):
     if not country_code:
         return []
-
-    # Determinar o idioma com base no código do país
-    idioma_preferido = pais_para_idioma.get(country_code.lower(), "en")  # Default para inglês se não encontrado
 
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
     data_limite = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat(timespec="seconds").replace("+00:00", "Z")
@@ -49,7 +27,6 @@ def ObterVideosPopulares(country_name, niche):
         q=niche,
         part="snippet",
         type="video",
-        regionCode=country_code,
         maxResults=60,
         order="viewCount"
     )
@@ -57,40 +34,29 @@ def ObterVideosPopulares(country_name, niche):
     
     video_ids = [item["id"]["videoId"] for item in resultado["items"]]
     
-    # Agora obtemos as visualizações de cada vídeo
     detalhes_videos = youtube.videos().list(
-        part="statistics,snippet",  # Incluindo 'snippet' para acessar título e descrição
+        part="statistics",
         id=','.join(video_ids)
     ).execute()
 
     videos = []
-    for item in detalhes_videos["items"]:
-        video_id = item["id"]
+    for item in resultado["items"]:
+        video_id = item["id"]["videoId"]
         titulo = item["snippet"]["title"]
         descricao = item["snippet"]["description"]
         link = f"https://www.youtube.com/watch?v={video_id}"
-        views = item["statistics"]["viewCount"]
+        views = next((v["statistics"]["viewCount"] for v in detalhes_videos["items"] if v["id"] == video_id), 0)
         
-        # Detectando o idioma do título e descrição
-        try:
-            idioma_titulo = detect(titulo)
-            idioma_descricao = detect(descricao)
-        except:
-            idioma_titulo = "unknown"
-            idioma_descricao = "unknown"
-        
-        # Verificando se o idioma corresponde ao idioma desejado
-        if idioma_titulo == idioma_preferido or idioma_descricao == idioma_preferido:
-            videos.append({
-                "titulo": titulo,
-                "descricao": descricao,
-                "link": link,
-                "views": int(views)
-            })
+        videos.append({
+            "titulo": titulo,
+            "descricao": descricao,
+            "link": link,
+            "views": int(views)
+        })
     
     return videos
-
-def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
+    
+def GerarSugestaoDeConteudo(profile_info, youtube_data):
     referencias = "\n".join([f"{v['titulo']} ({v['link']})" for v in youtube_data])
     prompt = f"""
     Baseando-se nos seguintes vídeos populares do YouTube:
@@ -114,20 +80,22 @@ def escrever_texto_gradualmente(texto, delay=0.05):
 
 def main():
     st.title("AstroAI - Seu assistente de criação de conteúdo no YouTube")
+    st.subheader("Receba sugestões de conteúdo personalizadas!")
+    st.write("Responda às perguntas abaixo.")
+
     niche = st.text_input("Qual é o seu nicho?")
     audience = st.text_input("Quem é o seu público-alvo?")
     format_preference = st.text_input("Qual formato de vídeo você prefere criar?")
-    country_name = st.text_input("Digite o nome do país para buscar vídeos populares:")
     min_views = st.number_input("Número mínimo de visualizações (opcional):", min_value=0, step=1000)
     
     if st.button("Gerar Sugestões"):
-        if not niche or not audience or not format_preference or not country_name:
+        if not niche or not audience or not format_preference:
             st.error("Preencha todas as informações antes de continuar.")
         else:
-            profile_info = f"Nicho: {niche}, Público-alvo: {audience}, Formato: {format_preference}, País: {country_name}"
-            youtube_data = ObterVideosPopulares(country_name, niche)
+            profile_info = f"Nicho: {niche}, Público-alvo: {audience}, Formato: {format_preference}"
+            youtube_data = ObterVideosPopulares(niche)
             videos_filtrados = [v for v in youtube_data if v['views'] >= min_views] if min_views else youtube_data
-            sugestoes_de_conteudo = GerarSugestaoDeConteudo(profile_info, videos_filtrados, country_name)
+            sugestoes_de_conteudo = GerarSugestaoDeConteudo(profile_info, videos_filtrados)
             st.subheader("Sugestões de conteúdo:")
             escrever_texto_gradualmente(sugestoes_de_conteudo, 0.01)
 
