@@ -1,11 +1,3 @@
-from openai import OpenAI
-from googleapiclient.discovery import build
-from langdetect import detect
-from datetime import datetime, timedelta, timezone
-import re
-import streamlit as st
-import time
-
 API_KEY = st.secrets["API_KEY"]
 YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
 
@@ -114,7 +106,7 @@ def ObterVideosPopulares(country_name, niche):
         })
 
     # Retornar vídeos do nicho + vídeos em alta
-    return niche_videos + trending_videos
+    return niche_videos
 
 #Função que filtra os vídeos mais populares com base no número de visualizações pedido
 def FiltroDeVideosPorViews(videos, min_views):
