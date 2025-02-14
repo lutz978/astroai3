@@ -65,7 +65,7 @@ def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
     Para cada sugestão, inclua o título do vídeo de referência e o link.
     """
     
-    prompt = (
+    prompt += (
         f"Perfil do criador: {profile_info}\n\n"
     )
 
