@@ -100,43 +100,24 @@ def ObterVideosPopulares(country_name, niche):
 def GerarSugestaoDeConteudo(profile_info, youtube_data, country_name):
     """Gera sugestões de conteúdo com base no perfil do criador e nos vídeos filtrados do país específico."""
     prompt = (
-        f"Você é um assistente criativo e interativo especializado em sugerir ideias de conteúdo para criadores de vídeos no YouTube.\n\n"
+        f"Você é um assistente criativo especializado em sugerir ideias de vídeos para criadores do YouTube.\n\n"
         f"Perfil do criador: {profile_info}\n\n"
-        f"Estamos trabalhando com vídeos populares filtrados por país: {country_name}. Aqui estão alguns vídeos populares do YouTube relacionados ao nicho do criador e ao país escolhido:\n"
+        f"Aqui estão vídeos populares no país escolhido ({country_name}):\n"
     )
 
-    # Incluir apenas os vídeos filtrados pelo país
     for video in youtube_data:
         prompt += (
-            f"- Título: {video['title']}, Visualizações: {video['views']}, "
-            f"Likes: {video['likes']}, Comentários: {video['comments']}\n"
+            f"- Título: {video['title']} ({video['views']} visualizações, {video['likes']} likes, {video['comments']} comentários)\n"
         )
 
     prompt += (
-    "\nPara cada uma das 10 ideias sugeridas, identifique quais vídeos da lista acima serviram de inspiração e explique "
-    "claramente como a ideia se conecta com o conteúdo já popular. Certifique-se de que cada sugestão é baseada diretamente "
-    "nos temas e tendências identificados nos vídeos listados."
-    )
-    
-    prompt += (
-        "\nExplique o motivo das ideias sugeridas, por exemplo: 'Esta ideia pode ser engajante porque no país escolhido ("
-        f"{country_name}) essa ideia desperta a curiosidade devido aos vídeos populares que analisamos'."
-    )
-
-    video_list_str = "\n".join(
-    f"- {video['title']} ({video['views']} visualizações, {video['likes']} likes, {video['comments']} comentários)"
-    for video in youtube_data
-    )
-
-    prompt += (
-    "\nAqui estão os vídeos analisados:\n"
-    f"{video_list_str}\n"
-    "Com base nessas informações, forneça sugestões de conteúdo diretamente relacionadas aos temas e tendências dos vídeos listados."
-    )
-
-    prompt += (
-    "\nPara as 3 melhores ideias, identifique o vídeo específico de referência e explique por que ele serviu de inspiração, "
-    "mencionando estatísticas relevantes como número de visualizações e engajamento."
+        "\nAgora, gere 10 sugestões de conteúdo para vídeos, garantindo que **cada uma delas faça referência direta a pelo menos um dos vídeos listados acima**.\n"
+        "Para cada ideia, inclua obrigatoriamente:\n"
+        "- Um título cativante\n"
+        "- O vídeo exato de onde a ideia surgiu\n"
+        "- O motivo pelo qual essa ideia é relevante e como se conecta ao vídeo de referência\n\n"
+        "Além disso, selecione as **três melhores ideias** e explique em mais detalhes por que os vídeos inspiraram essas sugestões, mencionando estatísticas importantes (número de visualizações e engajamento).\n\n"
+        "IMPORTANTE: Cada ideia **DEVE citar um vídeo específico** da lista acima como referência."
     )
 
     response = APIdaOpenAI(prompt)
