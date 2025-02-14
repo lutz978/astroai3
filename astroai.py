@@ -46,7 +46,7 @@ def ObterVideosPopulares(country_name, niche):
         type="video",
         regionCode=country_code,
         relevanceLanguage=idioma,
-        maxResults=max_resultados,
+        maxResults=10,
         order="viewCount"
     )
     resultado = busca.execute()
